@@ -7,6 +7,9 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
+
+#define LONG_BUFFER 8
 
 
 //Creación del socket
@@ -16,8 +19,12 @@ int main(int argc, char *argv[])
 {
     //Creacion de la estructura sockaddr_in inicializada a 0.
 
-    struct sockaddr_in datos_servidor;
+    struct sockaddr_in datos_servidor, datos_cliente;
     int long_serv = sizeof(datos_servidor);
+    int long_cliente = sizeof(datos_cliente);
+    char msg_recv[LONG_BUFFER];
+    char msg_enviado[LONG_BUFFER];
+    int recv = 0;
 
     // Se rellena la estructura de los datos del servidor con 0's.
 
@@ -56,12 +63,12 @@ int main(int argc, char *argv[])
 
     datos_servidor.sin_family = AF_INET;
     datos_servidor.sin_port = htons(puerto);
-    datos_servidor.sin_addr.s_addr = inet_addr("192.168.2.8"); 
+    datos_servidor.sin_addr.s_addr = inet_addr("172.22.58.104"); 
 
     // Se realiza la asociación de los datos con el socket. 
 
-    int asociacion = bind(sockfd,(struct sockaddr *) &datos_servidor, sizeof(datos_servidor));
-    getsockname(sockfd,(struct sockaddr *) &datos_servidor, &long_serv);
+    int asociacion = bind(sockfd,(struct sockaddr *) &datos_servidor, long_serv);
+    //getsockname(sockfd,(struct sockaddr *) &datos_servidor, &long_serv);
 
     if(asociacion < 0)
     {
@@ -77,7 +84,45 @@ int main(int argc, char *argv[])
         printf("\tDirección IP: %s\n", inet_ntoa(datos_servidor.sin_addr));
     }
 
-    //RECVFROM
+
+
+    do
+    {
+        printf("\n\tEsperando datos a recibir...\n");
+
+        int recv = recvfrom(sockfd, msg_recv, LONG_BUFFER, 0, (struct sockaddr *) &datos_cliente, &long_cliente);
+
+        if(recv < 0)
+        {
+            printf("\tError recibiendo datos\n");
+        }
+
+        else
+        {
+            printf("\tRecibiendo datos desde: %s\n", inet_ntoa(datos_cliente.sin_addr));
+        }
+
+        if(sendto(sockfd, msg_enviado, recv, 0, (struct sockaddr *) &datos_cliente, long_cliente) != recv)
+        {
+            printf("Error\n");
+        }
+
+        else
+        {
+            printf("\tEnviando datos...\n");
+        }
+    } while(recv != -1);
+    
+
+
+
+
+    
+
+
+    
+
+
 
 }
 
