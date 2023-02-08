@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
     int long_serv = sizeof(datos_servidor);
     int long_cliente = sizeof(datos_cliente);
     char msg_recv[LONG_BUFFER] = {0};
-    char msg_enviado[LONG_BUFFER];
+    char msg_enviado[LONG_BUFFER] = "Hola";
     int rd;
-    //int n_sockfd = 0;
+    int n_sockfd = 0;
 
     // Se rellena la estructura de los datos del servidor con 0's.
 
@@ -93,16 +93,19 @@ int main(int argc, char *argv[])
     if(list < 0)
     {
         printf("Error en la espera de peticiones\n");
+        close(sockfd);
     }
 
-
+    do
+    {
         printf("\n\nEsperando peticiones...\n\n");
 
-        int n_sockfd = accept(sockfd, (struct sockaddr *) &datos_cliente, &long_cliente);
+        n_sockfd = accept(sockfd, (struct sockaddr *) &datos_cliente, &long_cliente);
 
         if (n_sockfd < 0)
         {
             printf("Error en la petición procedente de %s\n", inet_ntoa(datos_cliente.sin_addr));
+            break;
         }
 
         else
@@ -111,11 +114,12 @@ int main(int argc, char *argv[])
         }
 
         do
-        {
-            rd = read(n_sockfd, msg_recv, sizeof(msg_recv));
+        {   
+            rd = read(n_sockfd, &msg_recv, sizeof(msg_recv));
         
-            if (rd < 0)
+            if (rd <= 0)
             {
+                printf("\tCerrando conexión TCP con el cliente ubicado en %s\n", inet_ntoa(datos_cliente.sin_addr));
                 close(n_sockfd);
                 break;
                 //printf("Error leyendo los datos recibidos\n");
@@ -123,10 +127,13 @@ int main(int argc, char *argv[])
 
             else
             {
-                printf("\tLeyendo datos de %s\n\n", inet_ntoa(datos_cliente.sin_addr));
+                printf("\t\nLeyendo datos de %s\n", inet_ntoa(datos_cliente.sin_addr));
             }
 
-            if(rd != write(n_sockfd, msg_enviado, rd))
+
+            int wr = write(n_sockfd, &msg_enviado, sizeof(msg_enviado));
+
+            if(wr < 0)
             {
                 printf("\nError al enviar el mensaje al cliente ubicado en %s\n\n", inet_ntoa(datos_cliente.sin_addr));
             }
@@ -136,11 +143,9 @@ int main(int argc, char *argv[])
                 printf("\n\tEnviando el mensaje al cliente ubicado en %s\n", inet_ntoa(datos_cliente.sin_addr));
             }
 
-            if(rd == 0)
-            {
-                close(n_sockfd);
-            }
-
         } while (rd != -1);
+    } while (n_sockfd != -1);
+    
+        
     
 }

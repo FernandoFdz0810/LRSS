@@ -11,7 +11,7 @@
 #include <time.h>
 #include <math.h>
 
-#define LONG_BUFFER 4
+// #define LONG_BUFFER 4
 #define PUERTO 2000
 
 
@@ -25,9 +25,10 @@ int main(int argc, char *argv[])
     struct sockaddr_in datos_servidor, datos_cliente;
     int long_serv = sizeof(datos_servidor);
     int long_cliente = sizeof(datos_cliente);
-    char* msg_enviado[LONG_BUFFER];
+    char* msg_enviado;
     int lg_msg_enviado = sizeof(msg_enviado);
-    char* msg_recibido[LONG_BUFFER];
+    char* msg_recibido;
+    int lg_msg_recibido = sizeof(msg_recibido);
     char* solicitud = argv[1];
     double t_ns[3];
     double t_min = 0.0, t_max = 0.0, t_medio[3];
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 
     if (conexion < 0)
     {
-        printf("Cliente: no se puede conectar\n");
+        printf("Cliente: no se puede conectar con el servidor\n");
     }
 
     else
@@ -97,12 +98,13 @@ int main(int argc, char *argv[])
 
     for(int i = 0; i < 4; i++)
     {
-        int wr = write(sockfd, msg_enviado, lg_msg_enviado);
+        int wr = write(sockfd, &msg_enviado, lg_msg_enviado);
 
         if(wr != lg_msg_enviado)
         {
             printf("Error al enviar mensaje con write\n");
             close(sockfd);
+            return -1;
         }
 
         else
@@ -110,7 +112,9 @@ int main(int argc, char *argv[])
             printf("Enviando datos...\n\n");
         }
 
-        int rd = read(sockfd, msg_recibido, sizeof(msg_recibido));
+        sleep(1.5);
+
+        int rd = read(sockfd, &msg_recibido, lg_msg_recibido);
 
         if (rd == -1)
         {
@@ -125,7 +129,7 @@ int main(int argc, char *argv[])
 
         else
         {
-            printf("Recibiendo datos...\n\n");
+            printf("Recibiendo datos...\n\n");;
         }
 
     }
