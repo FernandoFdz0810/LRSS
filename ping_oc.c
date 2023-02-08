@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
     char* msg_recibido;
     int lg_msg_recibido = sizeof(msg_recibido);
     char* solicitud = argv[1];
-    double t_ns[3];
-    double t_min = 0.0, t_max = 0.0, t_medio[3];
+    double t_ns[4];
+    double t_min = 0.0, t_max = 0.0, t_medio = 0.0;
     int paquetes_enviados = 0, paquetes_recibidos = 0, paquetes_perdidos = 0; //Número de mensajes enviados
 
     // Se rellena la estructura de los datos del servidor  y del cliente con 0's.
@@ -93,12 +93,17 @@ int main(int argc, char *argv[])
 
     else
     {
-        printf("\nConexión creada con el servidor\n\n");
+        printf("\nConexión creada con el servidor.\n\n");
+        
     }
+
+    printf("Enviando datos...\n\n");
+    printf("\nHaciendo ping con %s:\n\n", nombre_direccion);
 
     for(int i = 0; i < 4; i++)
     {
         int wr = write(sockfd, &msg_enviado, lg_msg_enviado);
+        clock_t comienzo = clock();
 
         if(wr != lg_msg_enviado)
         {
@@ -109,16 +114,20 @@ int main(int argc, char *argv[])
 
         else
         {
-            printf("Enviando datos...\n\n");
+            
+            paquetes_enviados += 1;
         }
 
-        sleep(1.5);
+        
+
+        sleep(1.25);
 
         int rd = read(sockfd, &msg_recibido, lg_msg_recibido);
 
         if (rd == -1)
         {
             printf("Error recibiendo datos\n");
+            paquetes_perdidos += 1;
         }
 
         if(rd == 0)
@@ -129,10 +138,39 @@ int main(int argc, char *argv[])
 
         else
         {
-            printf("Recibiendo datos...\n\n");;
+            paquetes_recibidos += 1;
+            clock_t final = clock();
+            double tiempo_transcurrido = 0.0;
+            tiempo_transcurrido += (double)(final - comienzo) / CLOCKS_PER_SEC;
+            t_ns[i] = tiempo_transcurrido / pow(10,-3);
+            t_min = t_ns[0];
+            if(t_ns[i] > t_max)
+            {
+                t_max = t_ns[i];
+            }
+            if(t_ns[i] < t_min)
+            {
+                t_min = t_ns[i];
+            }
+            printf("Respuesta desde: %s bytes: %ld tiempo: %.3fms TTL = 115 \n", inet_ntoa(datos_servidor.sin_addr),sizeof(msg_recibido)/8, t_ns[i]);
         }
 
     }
+
+    
+    for(int i = 0; i < 4; i++)
+    {
+        t_medio += t_ns[i];
+    }
+
+
+    double perc_perdida = (paquetes_perdidos * 100)/paquetes_recibidos;
+    double media = t_medio/4;
+
+    printf("\nEstadísticas de ping para: %s:\n", inet_ntoa(datos_servidor.sin_addr));
+    printf("\tPaquetes: Enviados = %d, Recibidos = %d, Perdidos = %d (%.2f%% perdida),\n", paquetes_enviados, paquetes_recibidos, paquetes_perdidos, perc_perdida);
+    printf("Tiempo aproximado de vuelta en mili-segundos:\n");
+    printf("\tMinimo = %.3fms, Máximo = %.3fms, Media = %.3fms\n\n", t_min, t_max, media);
 
     
     close(sockfd);
