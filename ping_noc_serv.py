@@ -1,10 +1,10 @@
 import sys
 import socket
 
-port = int(sys.argv[1])
+port = int(sys.argv[1]) #Almacena en la variable port el parametro que se le pasa por teclado
 #ip_address = "192.168.0.30"
 #ip= socket.inet_aton(ip_address) #Me convierte la IP en una IP que puede entender el SO
-server_address = ('192.168.0.30', port)
+server_address = ('192.168.0.32', port)
 
 #Comprobamos que se le han pasado el numero adecuado de argumentos
 if(len(sys.argv)!=2):    
@@ -25,9 +25,16 @@ print('Creacion del socket')
 s.bind(server_address)
 print('Asociacion del socket')
 
-while True:
+i=0
+while i<4:
     data, address = s.recvfrom(1024)
     print("Se ha conectado al servidor el ", address)
     print("El cliente ha enviado",data.decode())
 
-#Continuara
+    mensaje= "Te has conectado en el servidor, mensaje para que aprezca en el terminal cliente"
+    s.sendto(mensaje.encode(),address)
+    print("Mensaje enviado")
+    
+    i=i+1
+
+s.close()
