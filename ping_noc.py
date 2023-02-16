@@ -1,5 +1,6 @@
 import sys
 import socket
+import time
 
 ip_serv= sys.argv[1]
 port_serv= int(sys.argv[2])
@@ -17,8 +18,16 @@ if(len(sys.argv)!=3):
 s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 print('Creacion del socket')
 
-mensaje= "Haciendo ping"
-s.sendto(mensaje.encode(),address_serv)
-print("Mensaje enviado")
+i=0
+while i<4:  #Ejecuta veces el bucle
+    mensaje= "Haciendo ping"
+    s.sendto(mensaje.encode(),address_serv)
+    print("Mensaje enviado")
+    i= i+1
 
-#Continuara
+    data, address = s.recvfrom(1024)
+    print("Se ha recibido mensaje del servidor ", address)
+    print("El servidor ha enviado",data.decode())
+    time.sleep(2)#Añade un retraso de 2s
+
+s.close()
