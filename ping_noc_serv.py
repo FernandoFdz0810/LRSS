@@ -23,18 +23,21 @@ print('Creacion del socket')
 
 #Asociacion del socket
 s.bind(server_address)
-print('Asociacion del socket')
+print('\nAsociacion del socket')
 
-i=0
-while i<4:
+#i=0
+print('\nEsperando escuchas\n')
+
+while True:
+
     data, address = s.recvfrom(1024)
     print("Se ha conectado al servidor el ", address)
-    print("El cliente ha enviado",data.decode())
+    print("\nEl cliente ha enviado",data.decode())
 
     mensaje= "Te has conectado en el servidor, mensaje para que aprezca en el terminal cliente"
     s.sendto(mensaje.encode(),address)
-    print("Mensaje enviado")
+    print("\nMensaje enviado")
     
-    i=i+1
+    #i=i+1
 
 s.close()
