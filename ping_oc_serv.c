@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     datos_servidor.sin_family = AF_INET;
     datos_servidor.sin_port = htons(puerto);
-    datos_servidor.sin_addr.s_addr = inet_addr("192.168.2.3"); 
+    datos_servidor.sin_addr.s_addr = inet_addr("172.22.58.104"); 
 
     /*
     Se verifica que el numero de argumentos pasado por la linea de ordenes sea menor que 2,
